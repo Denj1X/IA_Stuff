@@ -1,197 +1,256 @@
 class NodParcurgere:
-    def __init__(self, info, g=0, h=0, parinte=None):
-        self.info = info  # eticheta nodului, de exemplu: 0,1,2...
-        self.parinte = parinte  # parintele din arborele de parcurgere
-        self.g = g
-        self.h = h
-        self.f = h + g
+   def __init__(self, info, g=0, h=0, parinte=None):
+      self.info = info  # eticheta nodului, de exemplu: 0,1,2...
+      self.parinte = parinte  # parintele din arborele de parcurgere
+      self.h = h
+      self.g = g
+      self.f = g + h
 
-    def drumRadacina(self):
-        l = []
-        nod = self
-        while nod:
-            l.insert(0, nod)
-            nod = nod.parinte
-        return l
+   def drumRadacina(self):
+      l = []
+      nod = self
+      while nod:
+         l.insert(0, nod)
+         nod = nod.parinte
+      return l
 
-    def vizitat(self):  # verifică dacă nodul a fost vizitat (informatia lui e in propriul istoric)
-        nodDrum = self.parinte
-        while nodDrum:
-            if (self.info == nodDrum.info):
-                return True
-            nodDrum = nodDrum.parinte
+   def vizitat(self):  # verifică dacă nodul a fost vizitat (informatia lui e in propriul istoric)
+      nodDrum = self.parinte
+      while nodDrum:
+         if (self.info == nodDrum.info):
+            return True
+         nodDrum = nodDrum.parinte
 
-        return False
+      return False
 
-    def __str__(self):
-        return str(self.info)
+   def __str__(self):
+      return str(self.info)
 
-    def __repr__(self):
-        sir = str(self.info) + "("
-        drum = self.drumRadacina()
-        sir += ("->").join([str(n.info) for n in drum])
-        sir += ")"
-        return sir
+   def __repr__(self):
+      sir = str(self.info) + "("
+      drum = self.drumRadacina()
+      sir += ("->").join([str(n.info) for n in drum])
+      sir += ")"
+      return sir
 
 
 class Graph:  # graful problemei
 
-    def __init__(self, matrice, start, scopuri, lista_h):
-        self.matrice = matrice
-        self.nrNoduri = len(matrice)
-        self.start = start  # informatia nodului de start
-        self.scopuri = scopuri  # lista cu informatiile nodurilor scop
-        self.lista_h = lista_h
+   def __init__(self, matrice, start, scopuri, lista_h):
+      self.matrice = matrice
+      self.nrNoduri = len(matrice)
+      self.start = start  # informatia nodului de start
+      self.scopuri = scopuri  # lista cu informatiile nodurilor scop
+      self.lista_h = lista_h
 
-    # va genera succesorii sub forma de noduri in arborele de parcurgere
+   # va genera succesorii sub forma de noduri in arborele de parcurgere
+   def succesori(self, nodCurent):
+      listaSuccesori = []
+      for i in range(self.nrNoduri):
+         if self.matrice[nodCurent.info][i] != 0:
+            nodNou = NodParcurgere(info=i, g=nodCurent.g + self.matrice[nodCurent.info][i], h=self.estimeaza_h(i),
+                                   parinte=nodCurent)
+            if not nodNou.vizitat():
+               listaSuccesori.append(nodNou)
+      return listaSuccesori
 
-    def succesori(self, nodCurent):
-        listaSuccesori = []
-        for i in range(self.nrNoduri):
-            if self.matrice[nodCurent.info][i] != 0:
-                nodNou = NodParcurgere(
-                    info=i, g=nodCurent.g + self.matrice[nodCurent.info][i], h=self.estimeaza_h(i),   parinte=nodCurent)
-                if not nodNou.vizitat():
-                    listaSuccesori.append(nodNou)
-        return listaSuccesori
+   def scop(self, infoNod):
+      return infoNod in self.scopuri
 
-    def scop(self, infoNod):
-        return infoNod in self.scopuri
-
-    def estimeaza_h(self, infoNod):
-        return self.lista_h[infoNod]
+   def estimeaza_h(self, nod):
+      return self.lista_h[nod]
 
 
 ##############################################################################################
 #                                 Initializare problema                                      #
 ##############################################################################################
-# m = [
-#     [0, 1, 0, 1, 1, 0, 0, 0, 0, 0],
-#     [1, 0, 1, 0, 0, 1, 0, 0, 0, 0],
-#     [0, 1, 0, 0, 0, 1, 0, 1, 0, 0],
-#     [1, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-#     [1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-#     [0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 1, 0, 1, 0, 0, 0, 1, 1],
-#     [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
-# ]
-m = [[0, 3, 5, 10, 0, 0, 100],    [0, 0, 0, 4, 0, 0, 0],    [0, 0, 0, 4, 9, 3, 0],    [0, 3, 0,
-                                                                                       0, 2, 0, 0],    [0, 0, 0, 0, 0, 0, 0],    [0, 0, 0, 0, 4, 0, 5],    [0, 0, 3, 0, 0, 0, 0], ]
+
+m = [
+   [0, 3, 5, 10, 0, 0, 100],
+   [0, 0, 0, 4, 0, 0, 0],
+   [0, 0, 0, 4, 9, 3, 0],
+   [0, 3, 0, 0, 2, 0, 0],
+   [0, 0, 0, 0, 0, 0, 0],
+   [0, 0, 0, 0, 4, 0, 5],
+   [0, 0, 3, 0, 0, 0, 0]
+]
+
 start = 0
 scopuri = [4, 6]
 lista_h = [0, 1, 6, 2, 0, 3, 0]
 gr = Graph(m, start, scopuri, lista_h)
 
 
-# algoritm BF
+def bin_search(listaNoduri, nodDeInserat, ls, ld):
+   mij = (ls + ld) // 2
+   if mij >= len(listaNoduri):
+      return mij
+   if mij < 0:
+      return 0
+   if ls == ld:
+      if listaNoduri[ls].f < nodDeInserat.f:
+         return ls + 1
+      elif listaNoduri[ls].f > nodDeInserat.f:
+         return ls
+      elif listaNoduri[ls].f == nodDeInserat.f:
+         if listaNoduri[ls].g == nodDeInserat.g:
+            return ls
+         elif listaNoduri[ls].g > nodDeInserat.g:
+            return ls + 1
+         else:
+            return ls
+
+   if listaNoduri[mij].f == nodDeInserat.f:
+      if listaNoduri[mij].g == nodDeInserat.g:
+         return mij
+      elif listaNoduri[mij].g > nodDeInserat.g:
+         return bin_search(listaNoduri, nodDeInserat, mij + 1, ld)
+      else:
+         return bin_search(listaNoduri, nodDeInserat, ls, mij)
+   elif listaNoduri[mij].f > nodDeInserat.f:
+      return bin_search(listaNoduri, nodDeInserat, ls, mij)
+   else:
+      return bin_search(listaNoduri, nodDeInserat, mij + 1, ld)
+
+
+def aStarSolMultiple(gr, nrSolutiiCautate=1):
+   # in coada vom avea doar noduri de tip NodParcurgere (nodurile din arborele de parcurgere)
+   c = [NodParcurgere(gr.start, 0, gr.estimeaza_h(gr.start))]
+   viz = []
+
+   while len(c) > 0:
+      # print("Coada actuala: " + str(c))
+      # input()
+      nodCurent = c.pop(0)
+      viz.append(nodCurent)
+
+      if gr.scop(nodCurent.info):
+         print("Solutie:")
+         drum = nodCurent.drumRadacina()
+         print(("->").join([str(n.info) for n in drum]))
+         print("Cost " + str(nodCurent.g))
+         print("\n----------------\n")
+         # input()
+         nrSolutiiCautate -= 1
+         if nrSolutiiCautate == 0:
+            return
+      # [2, 5, 7, 8, 10, 14]
+      for s in gr.succesori(nodCurent):
+         if s not in viz:
+            indice = bin_search(c, s, 0, len(c) - 1)
+            if indice == len(c):
+               c.append(s)
+            else:
+               c.insert(indice, s)
+
+
+def aStarOneSol(gr):
+   # in coada vom avea doar noduri de tip NodParcurgere (nodurile din arborele de parcurgere)
+   c = [NodParcurgere(gr.start, 0, gr.estimeaza_h(gr.start))]
+   viz = []
+
+   while len(c) > 0:
+      # print("Coada actuala: " + str(c))
+      # input()
+      nodCurent = c.pop(0)
+      viz.append(nodCurent)
+
+      if gr.scop(nodCurent.info):
+         print("Solutie:")
+         drum = nodCurent.drumRadacina()
+         print(("->").join([str(n.info) for n in drum]))
+         print("Cost " + str(nodCurent.g))
+         print("\n----------------\n")
+         return
+
+      succesori = gr.succesori(nodCurent)
+      for s in succesori:
+         foundS = False
+
+         for nod in c:
+            if s.info == nod.info:
+               # gasesc succesorul ca e deja in open
+               foundS = True
+               # pastrez nodul cu f mai mic
+               if s.f >= nod.f:
+                  succesori.remove(s)
+               else:
+                  c.remove(nod)
+               break
+
+         if not foundS:
+            # succesorul nu e in open, asa ca verific
+            # daca este in close
+            for nod in viz:
+               if s.info == nod.info:
+                  # ca mai sus, pastrez nodul cu f minim
+                  if s.f >= nod.f:
+                     succesori.remove(s)
+                  else:
+                     viz.remove(nod)
+                  break
+
+         # acum adaug succesorii corespunzator in open
+         for s in gr.succesori(nodCurent):
+            if s not in viz:
+               indice = bin_search(c, s, 0, len(c) - 1)
+               if indice == len(c):
+                  c.append(s)
+               else:
+                  c.insert(indice, s)
+
+
+#### algoritm BF
 # presupunem ca vrem mai multe solutii (un numar fix) prin urmare vom folosi o variabilă numită nrSolutiiCautate
 # daca vrem doar o solutie, renuntam la variabila nrSolutiiCautate
 # si doar oprim algoritmul la afisarea primei solutii
 
 def breadth_first(gr, nrSolutiiCautate=1):
-    # in coada vom avea doar noduri de tip NodParcurgere (nodurile din arborele de parcurgere)
-    c = [NodParcurgere(gr.start)]
+   # in coada vom avea doar noduri de tip NodParcurgere (nodurile din arborele de parcurgere)
+   c = [NodParcurgere(gr.start)]
 
-    while len(c) > 0:
-        #print("Coada actuala: " + str(c))
-        # input()
-        nodCurent = c.pop(0)
+   while len(c) > 0:
+      # print("Coada actuala: " + str(c))
+      # input()
+      nodCurent = c.pop(0)
 
-        if gr.scop(nodCurent.info):
-            print("Solutie:")
-            drum = nodCurent.drumRadacina()
-            print(("->").join([str(n.info) for n in drum]))
-            print("\n----------------\n")
-            # input()
-            nrSolutiiCautate -= 1
-            if nrSolutiiCautate == 0:
-                return
-        c += gr.succesori(nodCurent)
-
-
-def bin_search(listaNoduri, nodNou, ls, ld):
-    if ld == -1 :
-        return 0
-    if ls == ld:
-        if nodNou.f < listaNoduri[ls].f:
-            return ls
-        elif nodNou.f > listaNoduri[ls].f:
-            return ld + 1
-        else:  # f uri egale
-            if nodNou.g < listaNoduri[ls].g:
-                return ld + 1
-            elif nodNou.g > listaNoduri[ls].g:
-                return ls
-    else:
-        mij = (ls + ld) // 2
-        if nodNou.f < listaNoduri[mij].f:
-            return bin_search(listaNoduri, nodNou, ls, mij)
-        elif nodNou.f > listaNoduri[mij].f:
-            return bin_search(listaNoduri, nodNou, mij + 1, ld)
-        else:
-            if nodNou.g < listaNoduri[mij].g:
-                return bin_search(listaNoduri, nodNou, mij + 1, ld)
-            else:
-                return bin_search(listaNoduri, nodNou, ls, mij)
-
-
-def aStarSolMultiple(gr, nrSolutiiCautate=1):
-    # in coada vom avea doar noduri de tip NodParcurgere (nodurile din arborele de parcurgere)
-    c = [NodParcurgere(gr.start)]
-    closed = set([])
-    while len(c) > 0:
-        #print("Coada actuala: " + str(c))
-        # input()
-        nodCurent = c.pop(0)
-        closed.add(nodCurent)
-
-        if gr.scop(nodCurent.info):
-            print("Solutie:")
-            drum = nodCurent.drumRadacina()
-            print(("->").join([str(n.info) for n in drum]))
-            print(f"Cost : {nodCurent.g}")
-            print("\n----------------\n")
-            # input()
-            nrSolutiiCautate -= 1
-            if nrSolutiiCautate == 0:
-                return
-        for s in gr.succesori(nodCurent):
-            if s not in closed:
-                indice = bin_search(c, s, 0, len(c) - 1)
-                if indice == len(c):
-                    c.append(s)
-                else:
-                    c.insert(indice, s)
+      if gr.scop(nodCurent.info):
+         print("Solutie:")
+         drum = nodCurent.drumRadacina()
+         print(("->").join([str(n.info) for n in drum]))
+         print("\n----------------\n")
+         # input()
+         nrSolutiiCautate -= 1
+         if nrSolutiiCautate == 0:
+            return
+      c += gr.succesori(nodCurent)
 
 
 def depth_first(gr, nrSolutiiCautate=1):
-    # vom simula o stiva prin relatia de parinte a nodului curent
-    df(NodParcurgere(gr.start), nrSolutiiCautate)
+   # vom simula o stiva prin relatia de parinte a nodului curent
+   df(NodParcurgere(gr.start), nrSolutiiCautate)
 
 
 def df(nodCurent, nrSolutiiCautate):
-    # testul acesta s-ar valida doar daca in apelul initial avem df(start,if nrSolutiiCautate=0)
-    if nrSolutiiCautate <= 0:
-        return nrSolutiiCautate
-    #print("Stiva actuala: " + repr(nodCurent.drumRadacina()))
-    # input()
-    if gr.scop(nodCurent.info):
-        print("Solutie: ", end="")
-        drum = nodCurent.drumRadacina()
-        print(("->").join([str(n.info) for n in drum]))
-        print("\n----------------\n")
-        # input()
-        nrSolutiiCautate -= 1
-        if nrSolutiiCautate == 0:
-            return nrSolutiiCautate
-    lSuccesori = gr.succesori(nodCurent)
-    for sc in lSuccesori:
-        if nrSolutiiCautate != 0:
-            nrSolutiiCautate = df(sc, nrSolutiiCautate)
+   if nrSolutiiCautate <= 0:  # testul acesta s-ar valida doar daca in apelul initial avem df(start,if nrSolutiiCautate=0)
+      return nrSolutiiCautate
+   # print("Stiva actuala: " + repr(nodCurent.drumRadacina()))
+   # input()
+   if gr.scop(nodCurent.info):
+      print("Solutie: ", end="")
+      drum = nodCurent.drumRadacina()
+      print(("->").join([str(n.info) for n in drum]))
+      print("\n----------------\n")
+      # input()
+      nrSolutiiCautate -= 1
+      if nrSolutiiCautate == 0:
+         return nrSolutiiCautate
+   lSuccesori = gr.succesori(nodCurent)
+   for sc in lSuccesori:
+      if nrSolutiiCautate != 0:
+         nrSolutiiCautate = df(sc, nrSolutiiCautate)
 
-    return nrSolutiiCautate
+   return nrSolutiiCautate
 
 
 # df(a)->df(b)->df(c)->df(f)
@@ -199,30 +258,22 @@ def df(nodCurent, nrSolutiiCautate):
 
 
 def df_nerecursiv(nrSolutiiCautate):
-    stiva = [NodParcurgere(gr.start)]
-    # consider varful stivei in dreapta
-    while stiva:  # cat timp stiva nevida
-        nodCurent = stiva.pop()  # sterg varful
-        if gr.scop(nodCurent.info):
-            print("Solutie:")
-            drum = nodCurent.drumRadacina()
-            print(("->").join([str(n.info) for n in drum]))
-            print("\n----------------\n")
-            # input()
-            nrSolutiiCautate -= 1
-            if nrSolutiiCautate == 0:
-                return
-        # adaug in varf succesoii in ordine inversa deoarece vreau sa expandez primul succesor generat si trebuie sa il pun in varf
-        stiva += gr.succesori(nodCurent)[::-1]
+   stiva = [NodParcurgere(gr.start)]
+   # consider varful stivei in dreapta
+   while stiva:  # cat timp stiva nevida
+      nodCurent = stiva.pop()  # sterg varful
+      if gr.scop(nodCurent.info):
+         print("Solutie:")
+         drum = nodCurent.drumRadacina()
+         print(("->").join([str(n.info) for n in drum]))
+         print("\n----------------\n")
+         # input()
+         nrSolutiiCautate -= 1
+         if nrSolutiiCautate == 0:
+            return
+      stiva += gr.succesori(nodCurent)[
+               ::-1]  # adaug in varf succesoii in ordine inversa deoarece vreau sa expandez primul succesor generat si trebuie sa il pun in varf
 
 
-"""
-Mai jos puteti comenta si decomenta apelurile catre algoritmi. Pentru moment e apelat doar breadth-first
-"""
-aStarSolMultiple(gr, 1)
-# print("====================================================== \nBreadthfirst")
-# breadth_first(gr, nrSolutiiCautate=4)
-# print("====================================================== \nDepthFirst recursiv")
-# depth_first(gr, nrSolutiiCautate=4)
-# print("====================================================== \nDepthFirst nerecursiv")
-# df_nerecursiv(nrSolutiiCautate=4)
+aStarSolMultiple(gr, nrSolutiiCautate=2)
+aStarOneSol(gr)
